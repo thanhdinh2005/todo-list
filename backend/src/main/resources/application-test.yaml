@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    show-sql: false
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: WARN
+
+application:
+  security:
+    jwt:
+      secret-key: test-secret-key-test-secret-key-test-secret-key

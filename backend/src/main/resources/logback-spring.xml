@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+  <!-- ========================================== -->
+  <!-- 1. APPENDER: CONSOLE (Cho DEV - Có màu sắc)-->
+  <!-- ========================================== -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx</pattern>
+    </encoder>
+  </appender>
+
+  <!-- ========================================== -->
+  <!-- 2. APPENDER: FILE DẠNG JSON (Cho PROD - Loki/Grafana) -->
+  <!-- ========================================== -->
+  <appender name="JSON_APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/app-json.log</file>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>logs/app-json-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>20MB</maxFileSize>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+
+    <!-- SỬ DỤNG LOGSTASH ENCODER ĐỂ XUẤT RA JSON -->
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <!-- Optional: Thêm metadata để nhận diện app trên Loki -->
+      <customFields>{"app_name":"backend", "env":"production"}</customFields>
+    </encoder>
+  </appender>
+
+  <appender name="JSON_ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/error-json.log</file>
+
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>ERROR</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>logs/error-json-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>10MB</maxFileSize>
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+
+    <!-- SỬ DỤNG LOGSTASH ENCODER -->
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <customFields>{"app_name":"my-backend-service", "env":"production"}</customFields>
+    </encoder>
+  </appender>
+
+  <!-- ========================================== -->
+  <!-- CẤU HÌNH PROFILE -->
+  <!-- ========================================== -->
+  <springProfile name="dev">
+    <root level="INFO">
+      <appender-ref ref="CONSOLE" />
+    </root>
+  </springProfile>
+
+  <springProfile name="prod">
+    <root level="INFO">
+      <!-- Môi trường Prod xuất 100% ra dạng JSON chuẩn 1 dòng -->
+      <appender-ref ref="JSON_APP_FILE" />
+      <appender-ref ref="JSON_ERROR_FILE" />
+    </root>
+  </springProfile>
+
+</configuration>
