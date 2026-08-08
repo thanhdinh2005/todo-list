@@ -1,5 +1,7 @@
 package com.team.backend.entity;
 
+import com.team.backend.exception.AppException;
+import com.team.backend.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -43,7 +45,7 @@ public class Role extends BaseEntity {
   //========== FACTORY METHOD ===========
   public static Role create(String name, String description) {
     if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Role name must not be blank");
+      throw new AppException(ErrorCode.BAD_REQUEST, "Role name must not be blank");
     }
     return new Role(name, description);
   }

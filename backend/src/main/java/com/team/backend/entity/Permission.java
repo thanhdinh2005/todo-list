@@ -1,5 +1,7 @@
 package com.team.backend.entity;
 
+import com.team.backend.exception.AppException;
+import com.team.backend.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -26,7 +28,7 @@ public class Permission extends BaseEntity {
   //========== FACTORY METHOD ===========
   public static Permission create(String name, String description) {
     if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Permission name must not be blank");
+      throw new AppException(ErrorCode.BAD_REQUEST, "Permission name must not be blank");
     }
     return new Permission(name, description);
   }
