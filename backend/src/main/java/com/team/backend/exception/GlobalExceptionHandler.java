@@ -24,7 +24,7 @@ import java.util.UUID;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  // 1. Bắt các lỗi nghiệp vụ chủ động ném ra từ Service
+  // Bắt các lỗi nghiệp vụ chủ động ném ra từ App (AppException)
   @ExceptionHandler(AppException.class)
   public ResponseEntity<AppResponse<Void>> handleAppException(AppException ex) {
     ErrorCode code = ex.getErrorCode();
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
       .body(AppResponse.error(code.getHttpStatus().value(), code.getMessage()));
   }
 
-  // 2. Bắt lỗi tham số không hợp lệ
+  // Bắt lỗi IllegalArgumentException (chuyển về ErrorCode.INVALID_INPUT)
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<AppResponse<Void>> illegalArgumentExceptionHandler(IllegalArgumentException e) {
     log.warn("Illegal argument: {}", e.getMessage());
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
       .body(AppResponse.error(400, e.getMessage()));
   }
 
-  // 3. Bắt lỗi Validation (Khi dùng @Valid ở DTO)
+  // Bắt lỗi Validation (Khi dùng @Valid ở DTO)
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<AppResponse<Map<String, String>>> handleValidationException(
     MethodArgumentNotValidException ex) {
@@ -59,19 +59,7 @@ public class GlobalExceptionHandler {
       .body(AppResponse.error(400, "Validation failed", errors));
   }
 
-  // 4. Bắt lỗi sai kiểu dữ liệu param trên URL
-  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<AppResponse<Void>> handleTypeMismatch(
-    MethodArgumentTypeMismatchException ex) {
-
-    String message = String.format("Invalid parameter '%s': '%s'", ex.getName(), ex.getValue());
-    log.warn("Type mismatch: {}", message);
-    return ResponseEntity
-      .badRequest()
-      .body(AppResponse.error(400, message));
-  }
-
-  // 5. Bắt lỗi thiếu param bắt buộc trên URL
+  // Bắt lỗi thiếu param bắt buộc trên URL
   @ExceptionHandler(MissingServletRequestParameterException.class)
   public ResponseEntity<AppResponse<Void>> handleMissingParam(
     MissingServletRequestParameterException ex) {
@@ -83,7 +71,7 @@ public class GlobalExceptionHandler {
       .body(AppResponse.error(400, message));
   }
 
-  // 6. Bắt lỗi sai HTTP Method
+  // Bắt lỗi sai HTTP Method
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   public ResponseEntity<AppResponse<Void>> handleMethodNotSupported(
     HttpRequestMethodNotSupportedException ex) {
