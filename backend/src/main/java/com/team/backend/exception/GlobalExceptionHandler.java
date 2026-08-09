@@ -24,7 +24,7 @@ import java.util.UUID;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  // 1. Bắt các lỗi nghiệp vụ chủ động ném ra từ App (AppException)
+  // Bắt các lỗi nghiệp vụ chủ động ném ra từ App (AppException)
   @ExceptionHandler(AppException.class)
   public ResponseEntity<AppResponse<Void>> handleAppException(AppException ex) {
     ErrorCode code = ex.getErrorCode();
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
       ));
   }
 
-  // 2. Bắt lỗi IllegalArgumentException (chuyển về ErrorCode.INVALID_INPUT)
+  // Bắt lỗi IllegalArgumentException (chuyển về ErrorCode.INVALID_INPUT)
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<AppResponse<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
     log.warn("Illegal argument: {}", ex.getMessage());
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
       ));
   }
 
-  // 3. Bắt lỗi Validation (Khi dùng @Valid ở DTO)
+  // Bắt lỗi Validation (Khi dùng @Valid ở DTO)
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<AppResponse<Map<String, String>>> handleValidationException(
     MethodArgumentNotValidException ex) {
@@ -77,22 +77,7 @@ public class GlobalExceptionHandler {
       ));
   }
 
-  // 4. Fallback: Bắt tất cả các lỗi không xác định khác (Ngoại lệ hệ thống 500)
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<AppResponse<Void>> handleGeneralException(Exception ex) {
-    log.error("Unhandled exception: ", ex);
-    ErrorCode code = ErrorCode.INTERNAL_SERVER_ERROR;
-
-    return ResponseEntity
-      .status(code.getHttpStatus())
-      .body(AppResponse.error(
-        code.getHttpStatus().value(),
-        code.getCode(),
-        code.getMessage()
-      ));
-  }
-
-  // 5. Bắt lỗi thiếu param bắt buộc trên URL
+  // Bắt lỗi thiếu param bắt buộc trên URL
   @ExceptionHandler(MissingServletRequestParameterException.class)
   public ResponseEntity<AppResponse<Void>> handleMissingParam(
     MissingServletRequestParameterException ex) {
@@ -110,7 +95,7 @@ public class GlobalExceptionHandler {
       ));
   }
 
-  // 6. Bắt lỗi sai HTTP Method
+  // Bắt lỗi sai HTTP Method
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   public ResponseEntity<AppResponse<Void>> handleMethodNotSupported(
     HttpRequestMethodNotSupportedException ex) {
