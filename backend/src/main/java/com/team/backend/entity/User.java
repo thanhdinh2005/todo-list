@@ -1,7 +1,5 @@
 package com.team.backend.entity;
 
-import com.team.backend.exception.AppException;
-import com.team.backend.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -74,7 +72,7 @@ public class User extends BaseEntity {
 
   public void changeFullName(String fullName) {
     if (fullName == null || fullName.isBlank()) {
-      throw new AppException(ErrorCode.BAD_REQUEST, "Full name must not be blank");
+      throw new IllegalArgumentException("Full name must not be blank");
     }
     this.fullName = fullName;
   }
@@ -105,7 +103,7 @@ public class User extends BaseEntity {
 
   private static void validateEmail(String email) {
     if (email == null || !email.contains("@")) {
-      throw new AppException(ErrorCode.BAD_REQUEST, "Invalid email: " + email);
+      throw new IllegalArgumentException("Invalid email: " + email);
     }
   }
 }
