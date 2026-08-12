@@ -10,5 +10,5 @@ import java.time.Instant;
 public class LoginResponse {
   private String accessToken;
   private String refreshToken;
-  private Instant expiresIn;
+  private long expiresIn;
 }

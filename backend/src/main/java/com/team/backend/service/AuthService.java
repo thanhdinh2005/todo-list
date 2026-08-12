@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface AuthService {
   RegisterResponse register(RegisterRequest request);
   LoginResponse login(LoginRequest request);
-  LoginResponse refreshToken(RefreshTokenRequest refreshToken);
-  void logout(LogoutRequest refreshToken);
+  LoginResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
+  void logout(LogoutRequest logoutRequest);
   UserResponse getMe(UUID currentUserId);
 }

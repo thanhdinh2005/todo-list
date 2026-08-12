@@ -47,4 +47,13 @@ public class AppResponse<T> {
       .data(data)
       .build();
   }
+
+  public static <T> AppResponse<T> success(int status, String message, T data) {
+    return AppResponse.<T>builder()
+      .timestamp(LocalDateTime.now())
+      .status(status)
+      .message(message)
+      .data(data)
+      .build();
+  }
 }

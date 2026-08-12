@@ -11,16 +11,19 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
-@Service
-@RequiredArgsConstructor
+@Component
 @Slf4j
 public class JwtService {
 
@@ -40,11 +43,14 @@ public class JwtService {
   }
 
   public String generateAccessToken(User user) {
+    Date now = new Date();
+    Date expiration = new Date(now.getTime() + jwtExpiration);
+
     return Jwts.builder()
       .setSubject(user.getEmail())
-      .claim("userId", user.getId())
-      .setIssuedAt(new Date(System.currentTimeMillis()))
-      .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+      .claim("userId", user.getId().toString())
+      .setIssuedAt(now)
+      .setExpiration(expiration)
       .signWith(getSigningKey(), SignatureAlgorithm.HS256)
       .compact();
   }
@@ -53,38 +59,38 @@ public class JwtService {
     try {
       return extractAllClaims(token).getSubject();
     } catch (JwtException e) {
-      log.warn("Cannot extract username from token: {}", e.getMessage());
       return null;
     }
   }
 
-  public Long extractUserId(String token) {
+  public UUID extractUserId(String token) {
     try {
-      return extractAllClaims(token).get("userId", Long.class);
-    } catch (JwtException e) {
+      String userId = extractAllClaims(token)
+        .get("userId", String.class);
+
+      return UUID.fromString(userId);
+    } catch (JwtException | IllegalArgumentException e) {
       return null;
     }
   }
 
-  public boolean isValid(String token, CustomUserDetails userDetails) {
+  public boolean isValid(
+    String token,
+    CustomUserDetails userDetails
+  ) {
     try {
-      String email = extractAllClaims(token).getSubject();
-      return email.equals(userDetails.getUsername())
-        && !isTokenExpired(token);
+      Claims claims = extractAllClaims(token);
+
+      return claims.getSubject().equals(userDetails.getUsername())
+        && claims.getExpiration().after(new Date());
+
     } catch (JwtException e) {
       return false;
     }
   }
 
-  public LocalDateTime getExpirationTime() {
-    return LocalDateTime.now().plus(jwtExpiration, ChronoUnit.MILLIS);
-  }
-
-
-  private boolean isTokenExpired(String token) {
-    return extractAllClaims(token)
-      .getExpiration()
-      .before(new Date());
+  public long getExpirationSeconds() {
+    return jwtExpiration / 1000;
   }
 
   private Claims extractAllClaims(String token) {
@@ -96,6 +102,8 @@ public class JwtService {
   }
 
   private Key getSigningKey() {
-    return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    return Keys.hmacShaKeyFor(
+      secretKey.getBytes(StandardCharsets.UTF_8)
+    );
   }
 }

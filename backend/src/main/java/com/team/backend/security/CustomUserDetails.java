@@ -33,6 +33,5 @@ public class CustomUserDetails implements UserDetails {
   @Override
   public boolean isEnabled() { return user.isEnabled(); }
 
-
-  public UUID getUserId() { return user.getId(); }
+  public UUID getId() { return user.getId(); }
 }

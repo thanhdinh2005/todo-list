@@ -52,19 +52,7 @@ public class User extends BaseEntity {
   }
 
   // ========== FACTORY METHOD ===========
-  public static User register(
-    String email,
-    String rawPassword,
-    String fullName,
-    PasswordEncoder passwordEncoder
-  ) {
-    String cleanEmail = validateAndCleanEmail(email);
-    validatePassword(rawPassword);
-
-    return new User(cleanEmail, passwordEncoder.encode(rawPassword), fullName.trim());
-  }
-
-  public static User createByAdmin(
+  public static User create(
     String email,
     String rawPassword,
     String fullName,
