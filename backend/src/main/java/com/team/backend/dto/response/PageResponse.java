@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @Builder
 public class PageResponse<T> {
+
   private List<T> content;
   private int page;
   private int size;
@@ -25,8 +26,16 @@ public class PageResponse<T> {
       .build();
   }
 
-  public static <T> PageResponse<T> of(List<T> content, int page, int size, long totalElements) {
-    int totalPages = size == 0 ? 0 : (int) Math.ceil((double) totalElements / size);
+  public static <T> PageResponse<T> of(
+    List<T> content,
+    int page,
+    int size,
+    long totalElements
+  ) {
+    int totalPages = size == 0
+      ? 0
+      : (int) Math.ceil((double) totalElements / size);
+
     return PageResponse.<T>builder()
       .content(content)
       .page(page)
