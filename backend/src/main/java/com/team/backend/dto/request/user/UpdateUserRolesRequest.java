@@ -1,7 +1,15 @@
 package com.team.backend.dto.request.user;
 
-import java.util.List;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+import java.util.List;
+import java.util.UUID;
+
+@Getter
+@AllArgsConstructor
 public class UpdateUserRolesRequest {
-  private List<Integer> roleIds;
+  @NotNull(message = "List can't be null")
+  private List<UUID> roleIds;
 }
