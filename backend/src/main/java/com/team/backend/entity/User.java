@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -81,6 +82,60 @@ public class User extends BaseEntity {
 
   public Set<Role> getRoles() {
     return Collections.unmodifiableSet(roles);
+  }
+
+  public void updateFullName(String fullName) {
+    if (fullName == null || fullName.isBlank())
+      throw new AppException(ErrorCode.BAD_REQUEST, "Full name is requied");
+
+    if (fullName.length() > 100)
+      throw new AppException(
+        ErrorCode.BAD_REQUEST,
+        "Full name cannot exceed 100 characters"
+      );
+
+    this.fullName = fullName;
+  }
+
+  public void changePassword(
+    String currentPassword,
+    String newPassword,
+    PasswordEncoder encoder
+  ) {
+
+    if (!encoder.matches(currentPassword, this.hashPassword))
+      throw new AppException(
+        ErrorCode.UNAUTHORIZED,
+        "Wrong password, try again"
+      );
+
+    if (encoder.matches(newPassword, this.hashPassword))
+      throw new AppException(
+        ErrorCode.BAD_REQUEST,
+        "New password must be different with the old password"
+      );
+
+    this.hashPassword = encoder.encode(newPassword);
+  }
+
+  public void enabled() {
+    this.enabled = true;
+  }
+
+  public void disable() {
+    this.enabled = false;
+  }
+
+  public void changeRoles(Collection<Role> roles) {
+    if (roles == null || roles.isEmpty()) {
+      throw new AppException(
+        ErrorCode.BAD_REQUEST,
+        "User must have at least one role"
+      );
+    }
+
+    this.roles.clear();
+    this.roles.addAll(roles);
   }
 
   // ========= PRIVATE HELPERS ===========
