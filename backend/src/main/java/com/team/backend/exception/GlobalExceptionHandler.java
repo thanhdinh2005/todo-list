@@ -2,8 +2,10 @@ package com.team.backend.exception;
 
 import com.team.backend.common.AppResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -24,128 +26,327 @@ import java.util.UUID;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  // Bắt các lỗi nghiệp vụ chủ động ném ra từ App (AppException)
+  // =========================================================
+  // BUSINESS EXCEPTION
+  // =========================================================
+
   @ExceptionHandler(AppException.class)
-  public ResponseEntity<AppResponse<Void>> handleAppException(AppException ex) {
+  public ResponseEntity<AppResponse<Void>> handleAppException(
+    AppException ex
+  ) {
     ErrorCode code = ex.getErrorCode();
-    log.warn("App error [{}]: {}", code.name(), code.getMessage());
+
+    log.warn(
+      "Application error [{}]: {}",
+      code.name(),
+      code.getMessage()
+    );
+
     return ResponseEntity
       .status(code.getHttpStatus())
-      .body(AppResponse.error(code.getHttpStatus().value(), code.getMessage()));
+      .body(
+        AppResponse.error(
+          code.getHttpStatus().value(),
+          code.getMessage()
+        )
+      );
   }
 
-  // Bắt lỗi IllegalArgumentException (chuyển về ErrorCode.INVALID_INPUT)
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<AppResponse<Void>> illegalArgumentExceptionHandler(IllegalArgumentException e) {
-    log.warn("Illegal argument: {}", e.getMessage());
-    return ResponseEntity
-      .badRequest()
-      .body(AppResponse.error(400, e.getMessage()));
-  }
 
-  // Bắt lỗi Validation (Khi dùng @Valid ở DTO)
+  // =========================================================
+  // VALIDATION / BAD REQUEST
+  // =========================================================
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<AppResponse<Map<String, String>>> handleValidationException(
-    MethodArgumentNotValidException ex) {
-
+    MethodArgumentNotValidException ex
+  ) {
     Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getFieldErrors().forEach(error -> {
-      errors.put(error.getField(), error.getDefaultMessage());
-    });
 
-    log.warn("Validation failed: {}", errors);
+    ex.getBindingResult()
+      .getFieldErrors()
+      .forEach(error ->
+        errors.put(
+          error.getField(),
+          error.getDefaultMessage()
+        )
+      );
+
+    log.warn(
+      "Validation failed, fields={}",
+      errors.keySet()
+    );
+
     return ResponseEntity
       .badRequest()
-      .body(AppResponse.error(400, "Validation failed", errors));
+      .body(
+        AppResponse.error(
+          HttpStatus.BAD_REQUEST.value(),
+          "Validation failed",
+          errors
+        )
+      );
   }
 
-  // Bắt lỗi thiếu param bắt buộc trên URL
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<AppResponse<Void>> handleMessageNotReadable(
+    HttpMessageNotReadableException ex
+  ) {
+    log.warn("Malformed or unreadable request body");
+
+    return ResponseEntity
+      .badRequest()
+      .body(
+        AppResponse.error(
+          HttpStatus.BAD_REQUEST.value(),
+          "Invalid request body"
+        )
+      );
+  }
+
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<AppResponse<Void>> handleIllegalArgument(
+    IllegalArgumentException ex
+  ) {
+    log.warn("Illegal argument: {}", ex.getMessage());
+
+    return ResponseEntity
+      .badRequest()
+      .body(
+        AppResponse.error(
+          HttpStatus.BAD_REQUEST.value(),
+          ex.getMessage()
+        )
+      );
+  }
+
+
   @ExceptionHandler(MissingServletRequestParameterException.class)
-  public ResponseEntity<AppResponse<Void>> handleMissingParam(
-    MissingServletRequestParameterException ex) {
+  public ResponseEntity<AppResponse<Void>> handleMissingParameter(
+    MissingServletRequestParameterException ex
+  ) {
+    String message = String.format(
+      "Missing required parameter: '%s'",
+      ex.getParameterName()
+    );
 
-    String message = String.format("Missing required parameter: '%s'", ex.getParameterName());
-    log.warn("Missing param: {}", message);
+    log.warn("Missing request parameter: {}", ex.getParameterName());
+
     return ResponseEntity
       .badRequest()
-      .body(AppResponse.error(400, message));
+      .body(
+        AppResponse.error(
+          HttpStatus.BAD_REQUEST.value(),
+          message
+        )
+      );
   }
 
-  // Bắt lỗi sai HTTP Method
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<AppResponse<Void>> handleTypeMismatch(
+    MethodArgumentTypeMismatchException ex
+  ) {
+    String message = String.format(
+      "Invalid value for parameter: '%s'",
+      ex.getName()
+    );
+
+    log.warn(
+      "Request parameter type mismatch, parameter={}",
+      ex.getName()
+    );
+
+    return ResponseEntity
+      .badRequest()
+      .body(
+        AppResponse.error(
+          HttpStatus.BAD_REQUEST.value(),
+          message
+        )
+      );
+  }
+
+
+  // =========================================================
+  // HTTP METHOD
+  // =========================================================
+
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   public ResponseEntity<AppResponse<Void>> handleMethodNotSupported(
-    HttpRequestMethodNotSupportedException ex) {
+    HttpRequestMethodNotSupportedException ex
+  ) {
+    String message = String.format(
+      "Method '%s' is not supported for this endpoint",
+      ex.getMethod()
+    );
 
-    String message = String.format("Method '%s' is not supported for this endpoint, use: %s",
-      ex.getMethod(),
-      ex.getSupportedMethods() != null ? String.join(", ", ex.getSupportedMethods()) : "unknown");
+    log.warn(
+      "HTTP method not supported, method={}",
+      ex.getMethod()
+    );
 
-    log.warn("Method not supported: {}", message);
     return ResponseEntity
       .status(HttpStatus.METHOD_NOT_ALLOWED)
-      .body(AppResponse.error(405, message));
+      .body(
+        AppResponse.error(
+          HttpStatus.METHOD_NOT_ALLOWED.value(),
+          message
+        )
+      );
   }
 
-  /* =========================================================
-   * NHÓM LỖI SECURITY (Bắt ở tầng Controller - ví dụ: @PreAuthorize)
-   * ========================================================= */
 
-  @ExceptionHandler(DisabledException.class)
-  public ResponseEntity<AppResponse<Void>> handleDisabledException(DisabledException ex) {
-    log.warn("User disabled login attempt: {}", ex.getMessage());
+  // =========================================================
+  // DATABASE / DATA INTEGRITY
+  // =========================================================
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<AppResponse<Void>> handleDataIntegrityViolation(
+    DataIntegrityViolationException ex
+  ) {
+    log.warn(
+      "Data integrity violation: {}",
+      ex.getMostSpecificCause().getMessage()
+    );
+
     return ResponseEntity
-      .status(HttpStatus.UNAUTHORIZED)
-      .body(AppResponse.error(401, "Your account has been deactivated"));
+      .status(HttpStatus.CONFLICT)
+      .body(
+        AppResponse.error(
+          HttpStatus.CONFLICT.value(),
+          "Data conflict"
+        )
+      );
   }
+
+
+  // =========================================================
+  // SECURITY
+  // =========================================================
 
   @ExceptionHandler(BadCredentialsException.class)
-  public ResponseEntity<AppResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
-    log.warn("Bad credentials login attempt: {}", ex.getMessage());
+  public ResponseEntity<AppResponse<Void>> handleBadCredentials(
+    BadCredentialsException ex
+  ) {
+    log.warn("Authentication failed: invalid credentials");
+
     return ResponseEntity
       .status(HttpStatus.UNAUTHORIZED)
-      .body(AppResponse.error(401, "Invalid email or password"));
+      .body(
+        AppResponse.error(
+          HttpStatus.UNAUTHORIZED.value(),
+          "Invalid email or password"
+        )
+      );
   }
+
+
+  @ExceptionHandler(DisabledException.class)
+  public ResponseEntity<AppResponse<Void>> handleDisabledException(
+    DisabledException ex
+  ) {
+    log.warn("Authentication failed: account disabled");
+
+    return ResponseEntity
+      .status(HttpStatus.UNAUTHORIZED)
+      .body(
+        AppResponse.error(
+          HttpStatus.UNAUTHORIZED.value(),
+          "Your account has been deactivated"
+        )
+      );
+  }
+
 
   @ExceptionHandler(LockedException.class)
-  public ResponseEntity<AppResponse<Void>> handleLocked(LockedException ex) {
-    log.warn("Locked account login attempt: {}", ex.getMessage());
+  public ResponseEntity<AppResponse<Void>> handleLocked(
+    LockedException ex
+  ) {
+    log.warn("Authentication failed: account locked");
+
     return ResponseEntity
       .status(HttpStatus.FORBIDDEN)
-      .body(AppResponse.error(403, "Account locked"));
+      .body(
+        AppResponse.error(
+          HttpStatus.FORBIDDEN.value(),
+          "Account locked"
+        )
+      );
   }
+
 
   @ExceptionHandler(AuthenticationException.class)
-  public ResponseEntity<AppResponse<Void>> handleAuthenticationException(AuthenticationException ex) {
-    log.warn("Authentication error: {}", ex.getMessage());
+  public ResponseEntity<AppResponse<Void>> handleAuthenticationException(
+    AuthenticationException ex
+  ) {
+    log.warn(
+      "Authentication failed: {}",
+      ex.getClass().getSimpleName()
+    );
+
     return ResponseEntity
       .status(HttpStatus.UNAUTHORIZED)
-      .body(AppResponse.error(401, "Not authenticated"));
+      .body(
+        AppResponse.error(
+          HttpStatus.UNAUTHORIZED.value(),
+          "Not authenticated"
+        )
+      );
   }
+
 
   @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<AppResponse<Void>> handleAccessDeniedException(AccessDeniedException ex) {
-    log.warn("Access denied error: {}", ex.getMessage());
+  public ResponseEntity<AppResponse<Void>> handleAccessDeniedException(
+    AccessDeniedException ex
+  ) {
+    log.warn("Access denied");
+
     return ResponseEntity
       .status(HttpStatus.FORBIDDEN)
-      .body(AppResponse.error(403, "You are not authorized to perform this request."));
+      .body(
+        AppResponse.error(
+          HttpStatus.FORBIDDEN.value(),
+          "You are not authorized to perform this request."
+        )
+      );
   }
 
-  /* =========================================================
-   * NHÓM LỖI HỆ THỐNG MẶC ĐỊNH (Catch-all 500)
-   * ========================================================= */
+
+  // =========================================================
+  // UNEXPECTED EXCEPTION
+  // =========================================================
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<AppResponse<Void>> handleGenericException(Exception ex) {
-    String traceId = UUID.randomUUID().toString().substring(0, 8);
+  public ResponseEntity<AppResponse<Void>> handleGenericException(
+    Exception ex
+  ) {
+    String errorId = UUID.randomUUID()
+      .toString()
+      .substring(0, 8);
 
-    // Ghi log ở mức ERROR (sẽ đẩy ra file error.log), đính kèm traceId và stacktrace đầy đủ
-    log.error("Unhandled exception [TraceID: {}]: ", traceId, ex);
+    log.error(
+      "Unhandled exception [ErrorID: {}]",
+      errorId,
+      ex
+    );
 
-    // Trả message an toàn cho Client kèm theo TraceID để tiện tra cứu
-    String userMessage = String.format("The system is experiencing an issue. Please contact the administrator and provide the error code: %s", traceId);
+    String message = String.format(
+      "The system is experiencing an issue. "
+        + "Please contact the administrator and provide "
+        + "the error code: %s",
+      errorId
+    );
 
     return ResponseEntity
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .body(AppResponse.error(500, userMessage));
+      .body(
+        AppResponse.error(
+          HttpStatus.INTERNAL_SERVER_ERROR.value(),
+          message
+        )
+      );
   }
 }

@@ -1,5 +1,7 @@
 package com.team.backend.entity;
 
+import com.team.backend.exception.AppException;
+import com.team.backend.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -43,50 +45,30 @@ public class User extends BaseEntity {
   )
   private Set<Role> roles = new HashSet<>();
 
-  private User(
-    String email,
-    String hashPassword,
-    String fullName
-  ) {
+  private User(String email, String hashPassword, String fullName) {
     this.email = email;
     this.hashPassword = hashPassword;
     this.fullName = fullName;
   }
 
-  //========== FACTORY METHOD ===========
+  // ========== FACTORY METHOD ===========
   public static User create(
     String email,
     String rawPassword,
     String fullName,
     PasswordEncoder passwordEncoder
   ) {
-    validateEmail(email);
-    return new User(email, passwordEncoder.encode(rawPassword), fullName);
+    String cleanEmail = validateAndCleanEmail(email);
+    validatePassword(rawPassword);
+
+    return new User(cleanEmail, passwordEncoder.encode(rawPassword), fullName.trim());
   }
 
-  //========= BEHAVIOR METHOD ===========
-
-  public void changePassword(String rawPassword, PasswordEncoder passwordEncoder) {
-    this.hashPassword = passwordEncoder.encode(rawPassword);
-  }
-
-  public void changeFullName(String fullName) {
-    if (fullName == null || fullName.isBlank()) {
-      throw new IllegalArgumentException("Full name must not be blank");
-    }
-    this.fullName = fullName;
-  }
-
-  public void enable() {
-    this.enabled = true;
-  }
-
-  public void disable() {
-    this.enabled = false;
-  }
-
+  // ========= BEHAVIOR METHODS ===========
   public void assignRole(Role role) {
-    this.roles.add(role);
+    if (role != null) {
+      this.roles.add(role);
+    }
   }
 
   public void removeRole(Role role) {
@@ -101,9 +83,17 @@ public class User extends BaseEntity {
     return Collections.unmodifiableSet(roles);
   }
 
-  private static void validateEmail(String email) {
-    if (email == null || !email.contains("@")) {
-      throw new IllegalArgumentException("Invalid email: " + email);
+  // ========= PRIVATE HELPERS ===========
+  private static String validateAndCleanEmail(String email) {
+    if (email == null || !email.contains("@") || email.isBlank()) {
+      throw new AppException(ErrorCode.BAD_REQUEST, "Invalid email format");
+    }
+    return email.trim().toLowerCase();
+  }
+
+  private static void validatePassword(String rawPassword) {
+    if (rawPassword == null || rawPassword.isBlank() || rawPassword.length() < 6) {
+      throw new AppException(ErrorCode.BAD_REQUEST, "Password must be at least 6 characters");
     }
   }
 }

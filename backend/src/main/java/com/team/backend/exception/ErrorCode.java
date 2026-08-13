@@ -9,6 +9,10 @@ public enum ErrorCode {
   USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "ERR_USER_002", "Email is already exists"),
 
 
+  UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "ERR_REQ_401", "Unauthoried"),
+  NOT_FOUND(HttpStatus.NOT_FOUND, "ERR_REQ_404", "Resourse not found"),
+  CONFLICT(HttpStatus.CONFLICT, "ERR_REQ_409", "Resource already exists"),
+  BAD_REQUEST(HttpStatus.BAD_REQUEST, "ERR_REQ_400", "Bad request"),
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ERR_SYS_500", "Unexpected error");
 
   private final HttpStatus httpStatus;

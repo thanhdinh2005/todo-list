@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "refresh_tokens")
@@ -38,8 +39,8 @@ public class RefreshToken extends BaseEntity {
   }
 
   //========== FACTORY METHOD ===========
-  public static RefreshToken issueFor(User user, String token, Instant expiryDate) {
-    return new RefreshToken(token, user, expiryDate);
+  public static RefreshToken issueFor(User user, Instant expiryDate) {
+    return new RefreshToken(UUID.randomUUID().toString(), user, expiryDate);
   }
 
   //========= BEHAVIOR METHOD ===========
