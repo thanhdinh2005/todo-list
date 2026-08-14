@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
     log.warn(
       "Application error [{}]: {}",
       code.name(),
-      code.getMessage()
+      ex.getCustomeMessage().isBlank() ? code.getMessage() : ex.getCustomeMessage()
     );
 
     return ResponseEntity
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
       .body(
         AppResponse.error(
           code.getHttpStatus().value(),
-          code.getMessage()
+          ex.getCustomeMessage().isBlank() ? code.getMessage() : ex.getCustomeMessage()
         )
       );
   }

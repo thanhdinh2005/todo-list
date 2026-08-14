@@ -6,6 +6,7 @@ import lombok.Getter;
 public class AppException extends RuntimeException {
 
   private final ErrorCode errorCode;
+  private String customeMessage;
 
   public AppException(ErrorCode errorCode) {
     super(errorCode.getMessage());
@@ -14,6 +15,7 @@ public class AppException extends RuntimeException {
 
   public AppException(ErrorCode errorCode, String customMessage) {
     super(customMessage);
+    this.customeMessage = customMessage;
     this.errorCode = errorCode;
   }
 }

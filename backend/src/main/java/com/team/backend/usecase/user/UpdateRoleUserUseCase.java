@@ -8,10 +8,10 @@ import com.team.backend.exception.AppException;
 import com.team.backend.exception.ErrorCode;
 import com.team.backend.repository.RoleRepository;
 import com.team.backend.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
