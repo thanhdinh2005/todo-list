@@ -9,6 +9,7 @@ public enum ErrorCode {
   USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "ERR_USER_002", "Email is already exists"),
 
 
+  FORBIDDEN(HttpStatus.FORBIDDEN, "ERR_REQ_403", "Forbidden"),
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "ERR_REQ_401", "Unauthoried"),
   NOT_FOUND(HttpStatus.NOT_FOUND, "ERR_REQ_404", "Resourse not found"),
   CONFLICT(HttpStatus.CONFLICT, "ERR_REQ_409", "Resource already exists"),
