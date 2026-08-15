@@ -52,7 +52,6 @@ jobs:
           ssh homelab <<EOF
             set -e
 
-            APP_PORT=8081
             VERSION="${VERSION}"
             DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME}"
 
@@ -75,20 +74,30 @@ jobs:
             echo "Starting backend..."
             docker compose up -d backend
 
-            echo "Waiting for application..."
+            echo "Waiting for application health..."
 
             for i in {1..30}; do
 
-              if curl -fs http://localhost:\$APP_PORT/api/actuator/health >/dev/null; then
+              STATUS=$(docker inspect \
+                --format='{{.State.Health.Status}}' \
+                todo_app 2>/dev/null || echo "starting")
+
+              echo "Health status: $STATUS"
+
+              if [ "$STATUS" = "healthy" ]; then
                 echo "Application is healthy."
                 break
               fi
 
-              if [ \$i -eq 30 ]; then
+              if [ "$STATUS" = "unhealthy" ]; then
                 echo "Health check failed."
-
                 docker compose logs backend --tail=100
+                exit 1
+              fi
 
+              if [ "$i" -eq 30 ]; then
+                echo "Health check timeout."
+                docker compose logs backend --tail=100
                 exit 1
               fi
 
