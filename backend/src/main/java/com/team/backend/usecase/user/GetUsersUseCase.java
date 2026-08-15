@@ -6,12 +6,14 @@ import com.team.backend.dto.response.UserResponse;
 import com.team.backend.entity.Role;
 import com.team.backend.entity.User;
 import com.team.backend.repository.UserRepository;
+import com.team.backend.specification.UserSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,41 +27,26 @@ public class GetUsersUseCase {
   private final UserRepository userRepository;
 
   public PageResponse<UserResponse> execute(UserFilterParam filter) {
-    Pageable pageable = PageRequest.of(
-      filter.getPageOrDefault(),
-      filter.getSizeOrDefault(),
-      Sort.by(
-        "DESC".equalsIgnoreCase(filter.getOrderByOrDefault())
-          ? Sort.Direction.DESC : Sort.Direction.ASC,
-        "updatedAt"
-      )
-    );
+    Specification<User> spec = UserSpecification.buildFilter(filter.getEnabled());
+    Page<User> page = userRepository.findAll(spec, filter.toPageable());
 
-    Page<User> page = userRepository.findAll(pageable);
+    List<UserResponse> items = page.getContent()
+      .stream()
+      .map(this::toResponse)
+      .toList();
 
-    List<UserResponse> items =
-      page.getContent()
-        .stream()
-        .map(user -> UserResponse.builder()
-          .id(user.getId())
-          .createdAt(user.getCreatedAt())
-          .fullName(user.getFullName())
-          .enabled(user.isEnabled())
-          .roles(
-            user.getRoles().stream()
-              .map(Role::getName)
-              .toList()
-          )
-          .build())
-        .toList();
+    log.info("Get all users with {} elements", page.getTotalElements());
 
-    log.info("Get all users with: {} elements", page.getTotalElements());
+    return PageResponse.of(items, page.getNumber(), page.getSize(), page.getTotalElements());
+  }
 
-    return PageResponse.of(
-      items,
-      page.getNumber(),
-      page.getSize(),
-      page.getTotalElements()
-    );
+  private UserResponse toResponse(User user) {
+    return UserResponse.builder()
+      .id(user.getId())
+      .createdAt(user.getCreatedAt())
+      .fullName(user.getFullName())
+      .enabled(user.isEnabled())
+      .roles(user.getRoles().stream().map(Role::getName).toList())
+      .build();
   }
 }
