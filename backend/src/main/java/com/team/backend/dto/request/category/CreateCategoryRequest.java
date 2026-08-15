@@ -12,5 +12,7 @@ public class CreateCategoryRequest {
   @Size(max = 100, message = "Category name must not exceed 100 characters")
   private String name;
 
+  @NotBlank(message = "Color code is required")
+  @Size(max = 7, message = "Color code must not exceed 7 characters")
   private String colorCode;
 }

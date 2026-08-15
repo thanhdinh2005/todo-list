@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 
@@ -38,8 +39,13 @@ public class Task extends BaseEntity {
   @JoinColumn(name = "category_id")
   private Category category;
 
-  private Task(String title, String description, Instant dueDate,
-               User owner, Category category) {
+  private Task(
+    String title,
+    String description,
+    Instant dueDate,
+    User owner,
+    Category category
+  ) {
     this.title = validateTitle(title);
     this.description = description;
     this.dueDate = dueDate;
@@ -48,21 +54,48 @@ public class Task extends BaseEntity {
     this.completed = false;
   }
 
-  public static Task create(String title, String description, Instant dueDate,
-                            User owner, Category category) {
+  public static Task create(
+    String title,
+    String description,
+    Instant dueDate,
+    User owner,
+    Category category
+  ) {
     if (owner == null) {
-      throw new IllegalArgumentException("Task phải thuộc về 1 owner");
+      throw new AppException(
+        ErrorCode.BAD_REQUEST,
+        "Task must be belong to at least one user"
+      );
     }
     validateCategoryOwnership(owner, category);
     return new Task(title, description, dueDate, owner, category);
   }
 
-  public void editDetails(String title, String description, Instant dueDate, Category category) {
-    validateCategoryOwnership(this.owner, category);
+  public void updateTitle(String title) {
     this.title = validateTitle(title);
+  }
+
+  public void updateDescription(String description) {
     this.description = description;
+  }
+
+  public void updateDueDate(Instant dueDate) {
     this.dueDate = dueDate;
+  }
+
+  public void clearDueDate() {
+    this.dueDate = null;
+  }
+
+  public void assignCategory(Category category) {
+    if (category != null && !category.isOwnedBy(this.owner.getId())) {
+      throw new AppException(ErrorCode.FORBIDDEN, "Cannot assign another's category");
+    }
     this.category = category;
+  }
+
+  public void removeCategory() {
+    this.category = null;
   }
 
   public void complete() {
@@ -73,8 +106,8 @@ public class Task extends BaseEntity {
     this.completed = false;
   }
 
-  public boolean isOwnedBy(User user) {
-    return this.owner.getId().equals(user.getId());
+  public boolean isOwnedBy(UUID userId) {
+    return this.owner.getId().equals(userId);
   }
 
   public boolean isOverdue() {
