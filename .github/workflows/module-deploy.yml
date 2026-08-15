@@ -51,60 +51,61 @@ jobs:
         run: |
           ssh homelab \
             "VERSION='$VERSION' DOCKERHUB_USERNAME='$DOCKERHUB_USERNAME' bash -s" <<'REMOTE'
-            set -e
 
-            echo "=================================="
-            echo "Deploy Version : $VERSION"
-            echo "Image          : $DOCKERHUB_USERNAME/spring-api:$VERSION"
-            echo "=================================="
+          set -e
 
-            cd ~/spring-api-deploy/app
+          echo "=================================="
+          echo "Deploy Version : $VERSION"
+          echo "Image          : $DOCKERHUB_USERNAME/spring-api:$VERSION"
+          echo "=================================="
 
-            export DOCKERHUB_USERNAME="$DOCKERHUB_USERNAME"
-            export APP_VERSION="$VERSION"
+          cd ~/spring-api-deploy/app
 
-            echo "Pull latest image..."
-            docker compose pull backend
+          export DOCKERHUB_USERNAME="$DOCKERHUB_USERNAME"
+          export APP_VERSION="$VERSION"
 
-            echo "Stopping backend..."
-            docker compose stop -t 30 backend || true
+          echo "Pull latest image..."
+          docker compose pull backend
 
-            echo "Starting backend..."
-            docker compose up -d backend
+          echo "Stopping backend..."
+          docker compose stop -t 30 backend || true
 
-            echo "Waiting for application health..."
+          echo "Starting backend..."
+          docker compose up -d backend
 
-            for i in {1..30}; do
+          echo "Waiting for application health..."
 
-              STATUS=$(docker inspect \
-                --format='{{.State.Health.Status}}' \
-                todo_app 2>/dev/null || echo "starting")
+          for i in {1..30}; do
 
-              echo "Health status: $STATUS"
+            STATUS=$(docker inspect \
+              --format='{{.State.Health.Status}}' \
+              todo_app 2>/dev/null || echo "starting")
 
-              if [ "$STATUS" = "healthy" ]; then
-                echo "Application is healthy."
-                break
-              fi
+            echo "Health status: $STATUS"
 
-              if [ "$STATUS" = "unhealthy" ]; then
-                echo "Health check failed."
-                docker compose logs backend --tail=100
-                exit 1
-              fi
+            if [ "$STATUS" = "healthy" ]; then
+              echo "Application is healthy."
+              break
+            fi
 
-              if [ "$i" -eq 30 ]; then
-                echo "Health check timeout."
-                docker compose logs backend --tail=100
-                exit 1
-              fi
+            if [ "$STATUS" = "unhealthy" ]; then
+              echo "Health check failed."
+              docker compose logs backend --tail=100
+              exit 1
+            fi
 
-              sleep 2
-            done
+            if [ "$i" -eq 30 ]; then
+              echo "Health check timeout."
+              docker compose logs backend --tail=100
+              exit 1
+            fi
 
-            echo "Cleaning unused images..."
-            docker image prune -f
+            sleep 2
+          done
 
-            echo ""
-            echo "Deployment completed successfully."
-            REMOTE
+          echo "Cleaning unused images..."
+          docker image prune -f
+
+          echo ""
+          echo "Deployment completed successfully."
+          REMOTE
