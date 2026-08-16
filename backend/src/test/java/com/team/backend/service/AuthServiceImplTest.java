@@ -138,7 +138,7 @@ class AuthServiceImplTest {
     @Test
     @DisplayName("should return tokens when credentials are valid")
     void shouldReturnTokens_whenCredentialsValid() {
-      CustomUserDetails userDetails = new CustomUserDetails(user);
+      CustomUserDetails userDetails = new CustomUserDetails(user, null);
       Authentication authentication = mock(Authentication.class);
       RefreshToken refreshToken = mock(RefreshToken.class);
 
