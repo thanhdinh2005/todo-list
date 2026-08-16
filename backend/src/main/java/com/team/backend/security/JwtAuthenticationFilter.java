@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -64,7 +68,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
     }
 
     User user = userOpt.get();
-    CustomUserDetails userDetails = new CustomUserDetails(user);
+    Set<GrantedAuthority> authorities = user.getRoles().stream()
+      .flatMap(role -> role.getPermissions().stream())
+      .map(permission -> new SimpleGrantedAuthority(permission.getName()))
+      .collect(Collectors.toSet());
+    CustomUserDetails userDetails = new CustomUserDetails(user, authorities);
 
     // 5. Validate token gắn với đúng user này
     if (!jwtService.isValid(token, userDetails)) {

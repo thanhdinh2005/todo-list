@@ -31,7 +31,6 @@ public class UserController {
   private final DeleteUserUseCase deleteUserUseCase;
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('USER')")
   public ResponseEntity<PageResponse<UserResponse>> getUsers(
     @ModelAttribute UserFilterParam param
     ) {

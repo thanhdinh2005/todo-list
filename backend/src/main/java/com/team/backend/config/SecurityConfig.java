@@ -41,6 +41,8 @@ public class SecurityConfig {
       )
       .authorizeHttpRequests(auth -> auth
         .requestMatchers(
+          "/",
+          "/index.html",
           "/auth/**",
           "/swagger-ui/**",
           "/swagger-ui.html",
@@ -64,14 +66,6 @@ public class SecurityConfig {
     provider.setUserDetailsService(userDetailsService);
     provider.setPasswordEncoder(passwordEncoder);
     return provider;
-  }
-
-  @Bean
-  public UserDetailsService userDetailsService(UserRepository userRepository) {
-    return username -> userRepository.findByEmail(username)
-      .map(CustomUserDetails::new)
-      .orElseThrow(() -> new UsernameNotFoundException(
-        "User not found: " + username));
   }
 
   @Bean
