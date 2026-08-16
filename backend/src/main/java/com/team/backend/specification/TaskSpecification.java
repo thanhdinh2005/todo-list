@@ -97,6 +97,24 @@ public class TaskSpecification {
     return specs.stream().reduce(Specification::and).orElseThrow();
   }
 
+  public static Specification<Task> buildAdminFilter(
+    Boolean completed,
+    UUID categoryId,
+    Instant dueAfter,
+    Instant dueBefore,
+    String keyword
+  ) {
+    List<Specification<Task>> specs = new ArrayList<>();
+
+    addIfPresent(specs, completedEquals(completed));
+    addIfPresent(specs, categoryIdEquals(categoryId));
+    addIfPresent(specs, dueDateAfter(dueAfter));
+    addIfPresent(specs, dueDateBefore(dueBefore));
+    addIfPresent(specs, keywordMatches(keyword));
+
+    return specs.stream().reduce(Specification::and).orElse(null);
+  }
+
   private static void addIfPresent(
     List<Specification<Task>> specs,
     Specification<Task> spec) {

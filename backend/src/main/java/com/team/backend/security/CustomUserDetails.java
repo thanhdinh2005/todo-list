@@ -9,30 +9,29 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
-@RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
   private final User user;
+  private final Collection<? extends GrantedAuthority> authorities;
+
+  public CustomUserDetails(User user, Collection<? extends GrantedAuthority> authorities) {
+    this.user = user;
+    this.authorities = authorities;
+  }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return user.getRoles()
-      .stream()
-      .map(role -> new SimpleGrantedAuthority(role.getName()))
-      .toList();
+    return authorities;
   }
 
   @Override
-  public String getPassword() {
-    return user.getHashPassword();
-  }
+  public String getPassword() { return user.getHashPassword(); }
 
   @Override
-  public String getUsername() {
-    return user.getEmail();
-  }
+  public String getUsername() { return user.getEmail(); }
 
   @Override
   public boolean isEnabled() { return user.isEnabled(); }

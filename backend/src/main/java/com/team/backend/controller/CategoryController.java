@@ -1,5 +1,6 @@
 package com.team.backend.controller;
 
+import com.team.backend.apispec.CategoryApiSpec;
 import com.team.backend.common.AppResponse;
 import com.team.backend.dto.request.category.CreateCategoryRequest;
 import com.team.backend.dto.request.category.UpdateCategoryRequest;
@@ -19,12 +20,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
-public class CategoryController {
+public class CategoryController implements CategoryApiSpec {
   private final GetAllCategoryUseCase getAllCategoryUseCase;
   private final CreateCategoryUseCase createCategoryUseCase;
   private final UpdateCategoryUseCase updateCategoryUseCase;
   private final DeleteCategoryUseCase deleteCategoryUseCase;
 
+  @Override
   @GetMapping
   public ResponseEntity<AppResponse<List<CategoryResponse>>> getAllCategories(
     @AuthenticationPrincipal CustomUserDetails currentUser
@@ -34,6 +36,7 @@ public class CategoryController {
     );
   }
 
+  @Override
   @PostMapping
   public ResponseEntity<AppResponse<CategoryResponse>> createCategory(
     @RequestBody @Valid CreateCategoryRequest request,
@@ -41,13 +44,14 @@ public class CategoryController {
   ) {
     return ResponseEntity.status(HttpStatus.CREATED).body(
       AppResponse.success(
-        201,
+        HttpStatus.CREATED.value(),
         "Create Category successfully",
         createCategoryUseCase.execute(request, currentUser.getId())
       )
     );
   }
 
+  @Override
   @PutMapping("/{id}")
   public ResponseEntity<AppResponse<CategoryResponse>> updateCategory(
     @RequestBody @Valid UpdateCategoryRequest request,
@@ -59,14 +63,13 @@ public class CategoryController {
     );
   }
 
+  @Override
   @DeleteMapping("/{id}")
   public ResponseEntity<AppResponse<Void>> deleteCategory(
     @PathVariable UUID id,
     @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
     deleteCategoryUseCase.execute(currentUser.getId(), id);
-    return ResponseEntity.ok(
-      AppResponse.success(null)
-    );
+    return ResponseEntity.ok(AppResponse.success(null));
   }
 }

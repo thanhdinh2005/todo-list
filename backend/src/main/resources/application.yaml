@@ -28,11 +28,17 @@ server:
 
 springdoc:
   api-docs:
-    path: /api-docs
-
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-    operationsSorter: alpha
+    operationsSorter: method
+    tagsSorter: alpha
+    disable-swagger-default-url: true
+    display-request-duration: true
+    doc-expansion: none
+    filter: true
+  show-actuator: false
+  packages-to-scan: com.team.backend.controller
 
 management:
   endpoints:

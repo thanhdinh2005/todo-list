@@ -18,16 +18,4 @@ public class Permission extends BaseEntity {
 
   private String description;
 
-  private Permission(String name, String description) {
-    this.name = name;
-    this.description = description;
-  }
-
-  //========== FACTORY METHOD ===========
-  public static Permission create(String name, String description) {
-    if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Permission name must not be blank");
-    }
-    return new Permission(name, description);
-  }
 }

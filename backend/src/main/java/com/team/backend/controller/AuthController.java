@@ -1,14 +1,11 @@
 package com.team.backend.controller;
 
+import com.team.backend.apispec.AuthApiSpec;
+import com.team.backend.dto.request.auth.*;
 import com.team.backend.common.AppResponse;
-import com.team.backend.dto.request.auth.LoginRequest;
-import com.team.backend.dto.request.auth.LogoutRequest;
-import com.team.backend.dto.request.auth.RefreshTokenRequest;
-import com.team.backend.dto.request.auth.RegisterRequest;
 import com.team.backend.dto.response.LoginResponse;
 import com.team.backend.dto.response.RegisterResponse;
 import com.team.backend.dto.response.UserResponse;
-import com.team.backend.entity.User;
 import com.team.backend.security.CustomUserDetails;
 import com.team.backend.service.AuthService;
 import jakarta.validation.Valid;
@@ -21,9 +18,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController implements AuthApiSpec {
   private final AuthService authService;
 
+  @Override
   @PostMapping("/register")
   public ResponseEntity<AppResponse<RegisterResponse>> register(
     @RequestBody @Valid RegisterRequest request
@@ -32,47 +30,41 @@ public class AuthController {
 
     return ResponseEntity
       .status(HttpStatus.CREATED)
-      .body(
-        AppResponse.success(
-          HttpStatus.CREATED.value(),
-          "Registration successful",
-          response
-        )
-      );
+      .body(AppResponse.success(HttpStatus.CREATED.value(), "Registration successful", response));
   }
 
+  @Override
   @PostMapping("/login")
   public ResponseEntity<AppResponse<LoginResponse>> login(
     @RequestBody @Valid LoginRequest request
   ) {
     LoginResponse response = authService.login(request);
-
     return ResponseEntity.ok(AppResponse.success(response));
   }
 
+  @Override
   @PostMapping("/refresh")
   public ResponseEntity<AppResponse<LoginResponse>> refresh(
     @RequestBody @Valid RefreshTokenRequest request
   ) {
-    LoginResponse response =
-      authService.refreshToken(request);
-
+    LoginResponse response = authService.refreshToken(request);
     return ResponseEntity.ok(AppResponse.success(response));
   }
 
+  @Override
   @PostMapping("/logout")
   public ResponseEntity<AppResponse<Void>> logout(
     @RequestBody @Valid LogoutRequest request
   ) {
     authService.logout(request);
-
     return ResponseEntity.ok(AppResponse.success(null));
   }
 
+  @Override
   @GetMapping("/me")
   public ResponseEntity<AppResponse<UserResponse>> getMe(
     @AuthenticationPrincipal CustomUserDetails currentUser
-    ) {
+  ) {
     return ResponseEntity.ok(AppResponse.success(authService.getMe(currentUser.getId())));
   }
 }

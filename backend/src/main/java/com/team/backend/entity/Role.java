@@ -21,12 +21,11 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Role extends BaseEntity {
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, length = 100)
   private String name;
 
   private String description;
 
-  @Getter(AccessLevel.NONE)
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
     name = "role_permissions",
@@ -36,33 +35,35 @@ public class Role extends BaseEntity {
   private Set<Permission> permissions = new HashSet<>();
 
   private Role(String name, String description) {
-    this.name = name;
+    this.name = validateName(name);
     this.description = description;
   }
 
-  //========== FACTORY METHOD ===========
   public static Role create(String name, String description) {
-    if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Role name must not be blank");
-    }
     return new Role(name, description);
   }
 
-  //========= BEHAVIOR METHOD ===========
-
-  public void grantPermission(Permission permission) {
-    this.permissions.add(permission);
+  public void grantPermissions(Set<Permission> newPermissions) {
+    this.permissions.addAll(newPermissions);
   }
 
-  public void revokePermission(Permission permission) {
-    this.permissions.remove(permission);
+  public void rename(String newName) {
+    this.name = validateName(newName);
   }
 
-  public boolean hasPermission(String permissionName) {
-    return permissions.stream().anyMatch(p -> p.getName().equals(permissionName));
+  public void updateDescription(String description) {
+    this.description = description;
   }
 
-  public Set<Permission> getPermissions() {
-    return Collections.unmodifiableSet(permissions);
+  public void replacePermissions(Set<Permission> newPermissions) {
+    this.permissions.clear();
+    this.permissions.addAll(newPermissions);
+  }
+
+  private static String validateName(String name) {
+    if (name == null || name.isBlank()) {
+      throw new IllegalArgumentException("Role name must not be blank");
+    }
+    return name.trim();
   }
 }
