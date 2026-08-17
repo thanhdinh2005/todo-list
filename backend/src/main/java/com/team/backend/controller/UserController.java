@@ -1,6 +1,7 @@
 package com.team.backend.controller;
 
 import com.team.backend.common.AppResponse;
+import com.team.backend.common.RateLimit;
 import com.team.backend.dto.request.user.ChangePasswordRequest;
 import com.team.backend.dto.request.user.UpdateUserRequest;
 import com.team.backend.dto.request.user.UpdateUserRolesRequest;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@RateLimit
 public class UserController {
   private final GetUsersUseCase getUsersUseCase;
   private final GetUserByIdUseCase getUserByIdUseCase;

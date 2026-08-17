@@ -14,19 +14,15 @@ spring:
 
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
 
   swagger-ui:
-    enabled: false
+    enabled: true
 
 management:
   endpoint:
     health:
       show-details: never
-
-logging:
-  level:
-    root: INFO
 
 application:
   security:

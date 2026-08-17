@@ -1,6 +1,7 @@
 package com.team.backend.controller;
 
 import com.team.backend.common.AppResponse;
+import com.team.backend.common.RateLimit;
 import com.team.backend.dto.request.auditlog.AuditLogFilterParam;
 import com.team.backend.dto.request.task.TaskFilterParam;
 import com.team.backend.dto.response.AuditLogResponse;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/admin")
+@RateLimit
 @RequiredArgsConstructor
 public class AdminController {
   private final AdminGetAllTasksUseCase adminGetAllTasksUseCase;

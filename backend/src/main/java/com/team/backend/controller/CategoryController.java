@@ -2,6 +2,7 @@ package com.team.backend.controller;
 
 import com.team.backend.apispec.CategoryApiSpec;
 import com.team.backend.common.AppResponse;
+import com.team.backend.common.RateLimit;
 import com.team.backend.dto.request.category.CreateCategoryRequest;
 import com.team.backend.dto.request.category.UpdateCategoryRequest;
 import com.team.backend.dto.response.CategoryResponse;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
+@RateLimit
 public class CategoryController implements CategoryApiSpec {
   private final GetAllCategoryUseCase getAllCategoryUseCase;
   private final CreateCategoryUseCase createCategoryUseCase;

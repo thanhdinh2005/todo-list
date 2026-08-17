@@ -1,6 +1,7 @@
 package com.team.backend.controller;
 
 import com.team.backend.common.AppResponse;
+import com.team.backend.common.RateLimit;
 import com.team.backend.dto.response.PermissionResponse;
 import com.team.backend.usecase.permission.GetAllPermissionsUseCase;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequestMapping("/permissions")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('role:manage')")
+@RateLimit
 public class PermissionController {
   private final GetAllPermissionsUseCase getAllPermissionsUseCase;
 
