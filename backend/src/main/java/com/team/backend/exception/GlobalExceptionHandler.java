@@ -29,7 +29,6 @@ public class GlobalExceptionHandler {
   // =========================================================
   // BUSINESS EXCEPTION
   // =========================================================
-
   @ExceptionHandler(AppException.class)
   public ResponseEntity<AppResponse<Void>> handleAppException(
     AppException ex
@@ -52,11 +51,9 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   // =========================================================
   // VALIDATION / BAD REQUEST
   // =========================================================
-
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<AppResponse<Map<String, String>>> handleValidationException(
     MethodArgumentNotValidException ex
@@ -88,7 +85,6 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseEntity<AppResponse<Void>> handleMessageNotReadable(
     HttpMessageNotReadableException ex
@@ -105,7 +101,6 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<AppResponse<Void>> handleIllegalArgument(
     IllegalArgumentException ex
@@ -121,7 +116,6 @@ public class GlobalExceptionHandler {
         )
       );
   }
-
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
   public ResponseEntity<AppResponse<Void>> handleMissingParameter(
@@ -143,7 +137,6 @@ public class GlobalExceptionHandler {
         )
       );
   }
-
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   public ResponseEntity<AppResponse<Void>> handleTypeMismatch(
@@ -169,11 +162,9 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   // =========================================================
   // HTTP METHOD
   // =========================================================
-
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   public ResponseEntity<AppResponse<Void>> handleMethodNotSupported(
     HttpRequestMethodNotSupportedException ex
@@ -198,11 +189,9 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   // =========================================================
   // DATABASE / DATA INTEGRITY
   // =========================================================
-
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ResponseEntity<AppResponse<Void>> handleDataIntegrityViolation(
     DataIntegrityViolationException ex
@@ -222,10 +211,24 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   // =========================================================
   // SECURITY
   // =========================================================
+  @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+  public ResponseEntity<AppResponse<Void>> handleResponseStatusException(
+    org.springframework.web.server.ResponseStatusException ex
+  ) {
+    log.warn("Rate limit exceeded: {}", ex.getReason());
+
+    return ResponseEntity
+      .status(ex.getStatusCode())
+      .body(
+        AppResponse.error(
+          ex.getStatusCode().value(),
+          ex.getReason() != null ? ex.getReason() : "Too many requests"
+        )
+      );
+  }
 
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<AppResponse<Void>> handleBadCredentials(
@@ -243,7 +246,6 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   @ExceptionHandler(DisabledException.class)
   public ResponseEntity<AppResponse<Void>> handleDisabledException(
     DisabledException ex
@@ -260,7 +262,6 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   @ExceptionHandler(LockedException.class)
   public ResponseEntity<AppResponse<Void>> handleLocked(
     LockedException ex
@@ -276,7 +277,6 @@ public class GlobalExceptionHandler {
         )
       );
   }
-
 
   @ExceptionHandler(AuthenticationException.class)
   public ResponseEntity<AppResponse<Void>> handleAuthenticationException(
@@ -297,7 +297,6 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<AppResponse<Void>> handleAccessDeniedException(
     AccessDeniedException ex
@@ -314,11 +313,9 @@ public class GlobalExceptionHandler {
       );
   }
 
-
   // =========================================================
   // UNEXPECTED EXCEPTION
   // =========================================================
-
   @ExceptionHandler(Exception.class)
   public ResponseEntity<AppResponse<Void>> handleGenericException(
     Exception ex

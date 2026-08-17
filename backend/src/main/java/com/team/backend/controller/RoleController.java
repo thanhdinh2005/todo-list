@@ -1,6 +1,7 @@
 package com.team.backend.controller;
 
 import com.team.backend.common.AppResponse;
+import com.team.backend.common.RateLimit;
 import com.team.backend.dto.request.role.CreateRoleRequest;
 import com.team.backend.dto.request.role.UpdateRoleRequest;
 import com.team.backend.dto.response.RoleResponse;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor
+@RateLimit
 @PreAuthorize("hasAuthority('role:manage')")
 public class RoleController {
   private final GetAllRolesUseCase getAllRolesUseCase;

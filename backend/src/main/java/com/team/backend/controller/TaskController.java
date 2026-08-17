@@ -2,6 +2,7 @@ package com.team.backend.controller;
 
 import com.team.backend.apispec.TaskApiSpec;
 import com.team.backend.common.AppResponse;
+import com.team.backend.common.RateLimit;
 import com.team.backend.dto.request.task.CreateTaskRequest;
 import com.team.backend.dto.request.task.TaskFilterParam;
 import com.team.backend.dto.request.task.UpdateTaskRequest;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/tasks")
+@RateLimit
 @RequiredArgsConstructor
 public class TaskController implements TaskApiSpec {
   private final GetAllTasksUseCase getAllTasksUseCase;

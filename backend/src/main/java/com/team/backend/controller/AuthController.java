@@ -1,6 +1,7 @@
 package com.team.backend.controller;
 
 import com.team.backend.apispec.AuthApiSpec;
+import com.team.backend.common.RateLimit;
 import com.team.backend.dto.request.auth.*;
 import com.team.backend.common.AppResponse;
 import com.team.backend.dto.response.LoginResponse;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@RateLimit
 public class AuthController implements AuthApiSpec {
   private final AuthService authService;
 
