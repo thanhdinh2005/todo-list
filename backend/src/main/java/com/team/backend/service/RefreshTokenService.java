@@ -1,4 +1,4 @@
-package com.team.backend.service.impl;
+package com.team.backend.service;
 
 import com.team.backend.entity.RefreshToken;
 import com.team.backend.entity.User;
@@ -6,7 +6,6 @@ import com.team.backend.exception.AppException;
 import com.team.backend.exception.ErrorCode;
 import com.team.backend.repository.RefreshTokenRepository;
 import com.team.backend.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

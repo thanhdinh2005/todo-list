@@ -2,7 +2,7 @@ package com.team.backend.security;
 
 import com.team.backend.entity.User;
 import com.team.backend.repository.UserRepository;
-import com.team.backend.service.impl.JwtService;
+import com.team.backend.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

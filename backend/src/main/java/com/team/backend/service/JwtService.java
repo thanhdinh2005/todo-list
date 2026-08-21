@@ -1,4 +1,4 @@
-package com.team.backend.service.impl;
+package com.team.backend.service;
 
 import com.team.backend.entity.User;
 import com.team.backend.security.CustomUserDetails;
@@ -8,18 +8,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
 
