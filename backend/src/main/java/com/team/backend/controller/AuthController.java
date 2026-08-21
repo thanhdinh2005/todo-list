@@ -8,7 +8,7 @@ import com.team.backend.dto.response.LoginResponse;
 import com.team.backend.dto.response.RegisterResponse;
 import com.team.backend.dto.response.UserResponse;
 import com.team.backend.security.CustomUserDetails;
-import com.team.backend.service.AuthService;
+import com.team.backend.usecase.auth.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,18 +21,24 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RateLimit
 public class AuthController implements AuthApiSpec {
-  private final AuthService authService;
+  private final LoginUseCase loginUseCase;
+  private final LogoutUseCase logoutUseCase;
+  private final RegisterUseCase registerUseCase;
+  private final RefreshTokenUseCase refreshTokenUseCase;
+  private final GetUserProfileUseCase getUserProfileUseCase;
 
   @Override
   @PostMapping("/register")
   public ResponseEntity<AppResponse<RegisterResponse>> register(
     @RequestBody @Valid RegisterRequest request
   ) {
-    RegisterResponse response = authService.register(request);
+    RegisterResponse response = registerUseCase.register(request);
 
     return ResponseEntity
       .status(HttpStatus.CREATED)
-      .body(AppResponse.success(HttpStatus.CREATED.value(), "Registration successful", response));
+      .body(AppResponse.success(
+        HttpStatus.CREATED.value(), "Registration successful", response)
+      );
   }
 
   @Override
@@ -40,7 +46,7 @@ public class AuthController implements AuthApiSpec {
   public ResponseEntity<AppResponse<LoginResponse>> login(
     @RequestBody @Valid LoginRequest request
   ) {
-    LoginResponse response = authService.login(request);
+    LoginResponse response = loginUseCase.login(request);
     return ResponseEntity.ok(AppResponse.success(response));
   }
 
@@ -49,7 +55,7 @@ public class AuthController implements AuthApiSpec {
   public ResponseEntity<AppResponse<LoginResponse>> refresh(
     @RequestBody @Valid RefreshTokenRequest request
   ) {
-    LoginResponse response = authService.refreshToken(request);
+    LoginResponse response = refreshTokenUseCase.refreshToken(request);
     return ResponseEntity.ok(AppResponse.success(response));
   }
 
@@ -58,7 +64,7 @@ public class AuthController implements AuthApiSpec {
   public ResponseEntity<AppResponse<Void>> logout(
     @RequestBody @Valid LogoutRequest request
   ) {
-    authService.logout(request);
+    logoutUseCase.logout(request);
     return ResponseEntity.ok(AppResponse.success(null));
   }
 
@@ -67,6 +73,8 @@ public class AuthController implements AuthApiSpec {
   public ResponseEntity<AppResponse<UserResponse>> getMe(
     @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return ResponseEntity.ok(AppResponse.success(authService.getMe(currentUser.getId())));
+    return ResponseEntity.ok(
+      AppResponse.success(getUserProfileUseCase.getMe(currentUser.getId()))
+    );
   }
 }
