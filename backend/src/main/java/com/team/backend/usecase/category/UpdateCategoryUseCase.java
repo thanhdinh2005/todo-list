@@ -6,7 +6,6 @@ import com.team.backend.entity.Category;
 import com.team.backend.exception.AppException;
 import com.team.backend.exception.ErrorCode;
 import com.team.backend.repository.CategoryRepository;
-import com.team.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

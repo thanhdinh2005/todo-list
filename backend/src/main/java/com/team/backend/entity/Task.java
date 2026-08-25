@@ -127,9 +127,10 @@ public class Task extends BaseEntity {
   }
 
   private static void validateCategoryOwnership(User owner, Category category) {
-    if (category != null && category.isOwnedBy(owner.getId())) {
+    if (category != null && !category.isOwnedBy(owner.getId())) {
       throw new AppException(
-        ErrorCode.BAD_REQUEST, "Cannot assign someone else's category"
+        ErrorCode.FORBIDDEN,
+        "Cannot assign someone else's category"
       );
     }
   }
